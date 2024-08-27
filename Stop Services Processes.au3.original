@@ -30,7 +30,6 @@ Global $iLastStopServices = TimerInit() ;Variable to track the last time _stopse
 Global $iLastStopProcesses = TimerInit() ;Variable to track the last time _closeinstaller() was called.
 Global $iconfile = "G:\Users\mmuel\OneDrive\Documents\AutoIT\ff7.ico"
 Global $sLogFile = "G:\login\closure_log.txt"
-Global $bEnableAdvancedRenamer = 1 ; Variable to enable (1) or disable (0) the _AdvancedRenamer function by default
 TraySetIcon($iconfile)
 #EndRegion ;Globals
 
@@ -57,12 +56,8 @@ Func ToggleScript() ;handles the toggling on and off of script.  Eventually use 
 			_stopservicescustom() ; call function that handles checking service status and stop them if running
 			$iLastStopServices = TimerInit() ;Update $iLastStopServices with the current time for future timerdiff checks
 		EndIf
-
-		If $bEnableAdvancedRenamer Then
-			_AdvancedRenamer()
-		EndIf
-
 		Sleep(500)
+		_AdvancedRenamer()
 	WEnd
 EndFunc   ;==>ToggleScript
 
