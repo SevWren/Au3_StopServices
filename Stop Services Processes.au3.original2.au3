@@ -29,43 +29,16 @@ Global $bScriptRunning = False ; Variable to track the script's running state
 Global $iLastStopServices = TimerInit() ;Variable to track the last time _stopservicescustom() was called.
 Global $iLastStopProcesses = TimerInit() ;Variable to track the last time _closeinstaller() was called.
 Global $iconfile = "G:\Users\mmuel\OneDrive\Documents\AutoIT\ff7.ico"
-Global $sLogFile = @ProgramFilesDir & "\StopServicesProcess\closure_log.txt"
-Global $sLogDir = @ProgramFilesDir & "\StopServicesProcess"
-Global $bLogDirErrorDisplayed = False
-Global $bLogFileErrorDisplayed = False
+Global $sLogFile = "G:\login\closure_log.txt"
+Global $bEnableAdvancedRenamer = 1 ; Variable to enable (1) or disable (0) the _AdvancedRenamer function by default
 TraySetIcon($iconfile)
 #EndRegion ;Globals
 
-; Check if the directory exists, create it if it does not
-If Not FileExists($sLogDir) Then
-	DirCreate($sLogDir)
-	If Not FileExists($sLogDir) Then
-		If Not $bLogDirErrorDisplayed Then
-			MsgBox($MB_ICONERROR, "Error", "Could not create log directory: " & $sLogDir)
-			$bLogDirErrorDisplayed = True
-		EndIf
-		Exit
-	EndIf
-EndIf
-
-; Check if the log file exists, create it if it does not
-If Not FileExists($sLogFile) Then
-	Local $hFile = FileOpen($sLogFile, $FO_WRITE)
-	If @error Then
-		If Not $bLogFileErrorDisplayed Then
-			MsgBox($MB_ICONERROR, "Error", "Could not create log file: " & $sLogFile)
-			$bLogFileErrorDisplayed = True
-		EndIf
-		Exit
-	EndIf
-	FileClose($hFile)
-EndIf
-
-While  ;Keeps script running indefinitely. Hotkeys determine which path the script heads
+While 1  ;Keeps script running indefinitely.  Hotkeys determine which path the script heads
 	Sleep(50)
 WEnd
 
-Func ToggleScript() ;handles the toggling on and off of script. Eventually use this to handle halting the main loop instead.
+Func ToggleScript() ;handles the toggling on and off of script.  Eventually use this to handle halting the main loop instead.
 	If $bScriptRunning Then
 		MsgBox($MB_SYSTEMMODAL, "AutoIT Script", "Script paused!", 1)
 		$bScriptRunning = False ;this exits this function
@@ -74,18 +47,22 @@ Func ToggleScript() ;handles the toggling on and off of script. Eventually use t
 		$bScriptRunning = True
 	EndIf
 
-	While $bScriptRunning ;Loop indefinitely escaped by F1 hotkey
+	While $bScriptRunning  ;Loop indefinetly escaped by F1 hotkey
 		If CheckElapsedTime($iLastStopProcesses, 2) Then ; Check if 3 seconds have passed since the last call of _stopservices
 			_CloseInstaller() ;_CloseInstaller() terminates all the process names stored in $sProcesses[] array
 			$iLastStopProcesses = TimerInit() ;Update $iLastStopServices with the current time for future timerdiff checks
 		EndIf
 
 		If CheckElapsedTime($iLastStopServices, 2) Then ; Check if 10 seconds have passed since the last call of _stopservices
-			_stopservicescustom() ; call function that handles checking service status and stopping them if running
+			_stopservicescustom() ; call function that handles checking service status and stop them if running
 			$iLastStopServices = TimerInit() ;Update $iLastStopServices with the current time for future timerdiff checks
 		EndIf
+
+		If $bEnableAdvancedRenamer Then
+			_AdvancedRenamer()
+		EndIf
+
 		Sleep(500)
-		_AdvancedRenamer()
 	WEnd
 EndFunc   ;==>ToggleScript
 
@@ -129,7 +106,7 @@ Func _stopservicescustom() ; Check if a service is running and stop it, then log
 EndFunc   ;==>_stopservicescustom
 
 Func LogClosure($sName, $sType) ; Function to log the date and time of closure
-	Local $sDateTime = _NowTime(12) & " " & @MDAY & "/" & @MON & "/" & @YEAR     ; Get the current date and time
+	Local $sDateTime = _NowTime(12) & " " & @MDAY & "/" & @MON & "/" & @YEAR      ; Get the current date and time
 	Local $sLogEntry = @CRLF & $sDateTime & " - " & $sType & " '" & $sName & "' was closed." & @CRLF ; Create the log entry
 	FileWrite($sLogFile, $sLogEntry)
 EndFunc   ;==>LogClosure
