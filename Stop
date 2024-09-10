@@ -1,0 +1,58 @@
+Func _CloseInstaller()
+    For $processIndex = 0 To UBound($sProcesses) - 1
+        Local $processName = $sProcesses[$processIndex]
+        If ProcessExists($processName) Then
+            Local $closeResult = ProcessClose($processName)
+            If $closeResult = 1 Then
+                LogClosure($processName, "Process", "INFO", "Process closed successfully")
+            Else
+                Local $error = @error
+                LogClosure($processName, "Process", "ERROR", "Failed to close process. Error code: " & $error)
+            EndIf
+        Else
+            LogClosure($processName, "Process", "INFO", "Process not found")
+        EndIf
+    Next
+EndFunc
+
+Func LogClosure($sName, $sType, $sLevel, $sMessage)
+    Local $sDateTime = _NowTime(12) & " " & @MDAY & "/" & @MON & "/" & @YEAR
+    Local $sLogEntry = @CRLF & $sDateTime & " - [" & $sLevel & "] " & $sType & " '" & $sName & "': " & $sMessage & @CRLF
+    FileWrite($sLogFile, $sLogEntry)
+    ConsoleWrite($sLogEntry)
+EndFunc
+Func _stopservicescustom()
+    Local $bServiceStopped = False
+    Local $aServiceNames = ["TrustedInstaller", "wuauserv", "UsoSvc", "DoSvc", "WaaSMedicSvc", "sppsvc"]
+
+    For $serviceIndex = 0 To UBound($aServiceNames) - 1
+        If _ServiceRunning("", $aServiceNames[$serviceIndex]) Then
+            _stopservice("", $aServiceNames[$serviceIndex])
+            $bServiceStopped = True
+            LogClosure($aServiceNames[$serviceIndex], "Service")
+        EndIf
+    Next
+
+    If _ServiceRunning("", "sppsvc") Then
+        ProcessClose("sppsvc.exe")
+        $bServiceStopped = True
+        LogClosure("sppsvc", "Service")
+    EndIf
+EndFunc
+
+Func ToggleScript()
+    If $bScriptRunning Then
+        MsgBox($MB_SYSTEMMODAL, "AutoIT Script", "Script paused!", 1)
+        ConsoleWrite("AutoIT Script: Script paused!" & @CRLF)
+        $bScriptRunning = False
+    Else
+        MsgBox($MB_SYSTEMMODAL, "AutoIT Script", "Script started!", 1)
+        ConsoleWrite("AutoIT Script: Script started!" & @CRLF)
+        $bScriptRunning = True
+    EndIf
+
+    While $bScriptRunning
+        ; ... (rest of the function remains unchanged)
+    WEnd
+EndFunc    WEnd
+EndFunc

@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run AutoIt3 Script",
+            "type": "autoit",
+            "request": "launch",
+            "program": "${workspaceFolder}/your-script.au3",
+            "autoit3.installDir": "G:\\Program Files (x86)\\AutoIt3"
+        }
+    ]
+}
+
